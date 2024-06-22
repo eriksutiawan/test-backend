@@ -25,3 +25,5 @@ swagger:
 
 base url api :
 - http://localhost:8080/api
+
+add model best_plant_disease.h5 in folder internal/pkg/model

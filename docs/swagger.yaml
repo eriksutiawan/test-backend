@@ -1,0 +1,223 @@
+basePath: /api
+definitions:
+  test-backend_internal_app_auth_usecase.UserResponse:
+    properties:
+      access_token:
+        type: string
+      expired_token:
+        type: integer
+    type: object
+  test-backend_internal_app_user_usecase.UserResponse:
+    properties:
+      email:
+        type: string
+      id:
+        type: string
+      username:
+        type: string
+    type: object
+  usecase.AuthRegisterDto:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+      username:
+        type: string
+    type: object
+  usecase.LoginDto:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    type: object
+  usecase.PredictResponse:
+    properties:
+      label: {}
+      userId:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: This is a documentation for test backend.
+  title: Swagger Example API
+  version: "1.0"
+paths:
+  /auth/google:
+    get:
+      description: Redirects user to Google OAuth login page
+      produces:
+      - application/json
+      responses:
+        "307":
+          description: Temporary Redirect
+      summary: Initiates Google OAuth login
+      tags:
+      - auth
+  /auth/google/callback:
+    get:
+      description: Handles Google OAuth callback and exchanges code for access token
+      parameters:
+      - description: Authorization code received from Google
+        in: query
+        name: code
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 'message": "User authenticated successfully'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: 'error": "Failed to exchange token" or "Failed to get user
+            info'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Callback endpoint for Google OAuth
+      tags:
+      - auth
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: Login a user with username and password
+      parameters:
+      - description: User login details
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/usecase.LoginDto'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 'token": "access_token", "expired_token": "token expiration
+            in Unix timestamp'
+          schema:
+            $ref: '#/definitions/test-backend_internal_app_auth_usecase.UserResponse'
+        "400":
+          description: 'error": "Bad Request'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: 'error": "Unauthorized'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Login a user
+      tags:
+      - auth
+  /predict:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Predicts label from uploaded image
+      parameters:
+      - description: User ID
+        in: header
+        name: userID
+        required: true
+        type: string
+      - description: Image file to predict
+        in: formData
+        name: image
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/usecase.PredictResponse'
+        "400":
+          description: 'error": "Invalid image'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: 'error": "Internal Server Error'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Predict label from an image
+      tags:
+      - prediction
+  /register:
+    post:
+      consumes:
+      - application/json
+      description: Register a new user with username, password and email
+      parameters:
+      - description: User registration details
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/usecase.AuthRegisterDto'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 'message": "User created successfully'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: 'error": "Bad Request'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: 'error": "Internal Server Error'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Register a new user
+      tags:
+      - auth
+  /user:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves user details based on user ID
+      parameters:
+      - description: User ID
+        in: header
+        name: userID
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/test-backend_internal_app_user_usecase.UserResponse'
+        "500":
+          description: 'error": "Internal Server Error'
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get user details by ID
+      tags:
+      - user
+swagger: "2.0"
